@@ -73,7 +73,7 @@ const addProperty = (cardID, player) => {
   const target = hand.map((e) => e.id).indexOf(cardID);
   const pickedCard = hand[target];
   console.log(pickedCard);
-  let color = pickedCard.colors[0];
+  let color = pickedCard.colors[0].split(' ').join('');
 
   if (typeof properties[color] === 'undefined') {
     properties[color] = [];
@@ -108,18 +108,39 @@ const openRentAnyModal = (title, content) => {
 };
 
 const openRentModal = () => {};
-const openWildCardModal = (cardID) => {
+const openWildCardModal = (cardID, colors, player) => {
   const { hand, properties } = game.playerHands[player || game.currentTurn];
   const target = hand.map((e) => e.id).indexOf(cardID);
   const pickedCard = hand[target];
 
   const $modalBack = $('<div>').addClass('modalBase').prependTo('body');
-  const $modal = $('<div>').addClass('modalCard');
+  const $modal = $('<div>').addClass('modalCard').appendTo($modalBack);
   const $header = $('<h3>').text('Use card as...').appendTo($modal);
+  const $choiceContainer = $('<div>').addClass('wildPropChoiceContainer').appendTo($modal);
 
-  for (const color of pickedCard.colors) {
+  // eslint-disable-next-line array-callback-return
+  pickedCard.colors.map((color, index, array) => {
+    const $button = $('<div>').addClass('wildPropChoice').appendTo($choiceContainer)
+      .on('click', () => {
+        setWildPropCurrentColor(color, pickedCard);
+        addProperty(cardID);
+        $modalBack.remove();
+      });
 
-  }
+    $('<div>').addClass('wildPropDisplay').appendTo($button)
+      .css('background-color', colorToHex(color));
+    $('<p>').text(color).appendTo($button);
+    if (index === array.length - 1) {
+      $button.addClass('last');
+    }
+  });
+};
+
+const setWildPropCurrentColor = (color, card) => {
+  const rentAmount = cardTypes.property[color.toLowerCase().split(' ').join('')].rentAmounts;
+  const target = card.colors.indexOf(color);
+  card.colors.unshift(...card.colors.splice(target, 1));
+  card.rentAmounts.push(...rentAmount);
 };
 
 // ============ Computer Moves ============ //
@@ -149,16 +170,16 @@ const openWildCardModal = (cardID) => {
 
 // ============ Card Definitions ============ //
 const colors = {
-  red: 'red',
-  yellow: 'yellow',
-  blue: 'blue',
-  green: 'green',
-  brown: 'brown',
-  lightBlue: 'lightBlue',
-  lightGreen: 'lightGreen',
-  black: 'black',
-  purple: 'purple',
-  orange: 'orange',
+  red: 'Red',
+  yellow: 'Yellow',
+  blue: 'Blue',
+  green: 'Green',
+  brown: 'Brown',
+  lightBlue: 'Light Blue',
+  lightGreen: 'Light Green',
+  black: 'Black',
+  purple: 'Purple',
+  orange: 'Orange',
   allColors() {
     const allColor = [];
     for (const color in this) {
@@ -166,6 +187,22 @@ const colors = {
     }
     return allColor;
   },
+};
+
+const colorToHex = (color) => {
+  switch (color) {
+    case colors.red: return '#EF5350';
+    case colors.yellow: return '#FFD54F';
+    case colors.blue: return '#2962FF';
+    case colors.green: return '#388E3C';
+    case colors.brown: return '#6D4C41';
+    case colors.lightBlue: return '#E1F5FE';
+    case colors.lightGreen: return '#E0F2F1';
+    case colors.black: return '#000000';
+    case colors.purple: return '#9C27B0';
+    case colors.orange: return '#FFA726';
+    default: return '#000000';
+  }
 };
 
 class Card {
@@ -211,7 +248,7 @@ class PropertyCard extends Card {
     this.value = value;
     this.totalCards = totalCards;
     this.colors = color;
-    this.rentAmounts = rentAmounts;
+    this.rentAmounts = rentAmounts || [];
     this.locationNames = locationNames || [];
     this.action = (cardID) => {
       if (this.colors.length > 1) {
@@ -258,19 +295,19 @@ const cardTypes = {
     green: new PropertyCard('Green', 4, 3, [colors.green], [2, 4, 7], ['Regent Street', 'Oxford Street', 'Bond Street']),
     red: new PropertyCard('Red', 3, 3, [colors.red], [2, 3, 6], ['Strand', 'Fleet Street', 'Trafalgar Square']),
     yellow: new PropertyCard('Yellow', 2, 3, [colors.yellow], [2, 4, 6], ['Coverntry Street', 'Leicester Square', 'Piccadilly']),
-    // purple: new PropertyCard('Purple', 2, 3, [colors.purple], [1, 2, 4], ['Pall Mall', 'Whitehall', "Northumrl'd Avenue"]),
-    // black: new PropertyCard('Black', 2, 4, [colors.black], [1, 2, 3, 4], ['Marylebone Station', 'Fenchurch St. Station', 'Liverpool St. Station', "King's Cross Station"]),
-    // brown: new PropertyCard('Brown', 1, 2, [colors.brown], [1, 2], ['Old Kent Road', 'Whitechapel Road']),
-    // lightGreen: new PropertyCard('Light Green', 2, 2, [colors.lightGreen], [1, 2], ['Electric Company', 'Water Works']),
-    // lightBlue: new PropertyCard('Light Blue', 1, 3, [colors.lightBlue], [1, 2, 3], ['Euston Road', 'The Angel Islington', 'Pentonville Road']),
-    // any: new PropertyCard('Any', 0, 2, [...colors.allColors()]),
+    purple: new PropertyCard('Purple', 2, 3, [colors.purple], [1, 2, 4], ['Pall Mall', 'Whitehall', "Northumrl'd Avenue"]),
+    black: new PropertyCard('Black', 2, 4, [colors.black], [1, 2, 3, 4], ['Marylebone Station', 'Fenchurch St. Station', 'Liverpool St. Station', "King's Cross Station"]),
+    brown: new PropertyCard('Brown', 1, 2, [colors.brown], [1, 2], ['Old Kent Road', 'Whitechapel Road']),
+    lightgreen: new PropertyCard('Light Green', 2, 2, [colors.lightGreen], [1, 2], ['Electric Company', 'Water Works']),
+    lightblue: new PropertyCard('Light Blue', 1, 3, [colors.lightBlue], [1, 2, 3], ['Euston Road', 'The Angel Islington', 'Pentonville Road']),
+    any: new PropertyCard('Any', 0, 2, [...colors.allColors()]),
     brownLightBlue: new PropertyCard('Brown-Light Blue', 1, 1, [colors.brown, colors.lightBlue]),
-    // blackLightBlue: new PropertyCard('Black-Light Blue', 4, 1, [colors.black, colors.lightBlue]),
-    // orangePurple: new PropertyCard('Orange-Purple', 2, 2, [colors.orange, colors.purple]),
-    // redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.yellow, colors.red]),
-    // blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.green, colors.blue]),
-    // greenBlack: new PropertyCard('Green-Black', 4, 1, [colors.green, colors.black]),
-    // blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.lightGreen, colors.black]),
+    blackLightBlue: new PropertyCard('Black-Light Blue', 4, 1, [colors.black, colors.lightBlue]),
+    orangePurple: new PropertyCard('Orange-Purple', 2, 2, [colors.orange, colors.purple]),
+    redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.yellow, colors.red]),
+    blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.green, colors.blue]),
+    greenBlack: new PropertyCard('Green-Black', 4, 1, [colors.green, colors.black]),
+    blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.lightGreen, colors.black]),
   },
 };
 
@@ -431,8 +468,8 @@ const renderCard = (parent, cardInfo, stackPosition) => {
     .on('click', () => cardInfo.action(cardInfo.id))
     .text(`${cardInfo.name} \n ${cardInfo.type}`)
     .hover((e) => {
-      // e.stopPropagation();
-      e.currentTarget.toggleClass('cardToFront');
+      e.stopPropagation();
+      $(e.currentTarget).toggleClass('cardToFront');
     });
   if (stackPosition > 0) {
     $cardContainer.css('top', stackPosition * 30)
@@ -480,7 +517,7 @@ const renderProperty = () => {
   const { properties } = game.playerHands[game.userTurn];
   $('#userProperty').children().remove();
 
-  console.log(properties);
+  // console.log(properties);
 
   // if (properties.length > 0) {
   for (const color in properties) {
