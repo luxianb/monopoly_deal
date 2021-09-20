@@ -221,7 +221,7 @@ const setWildPropCurrentColor = (color, card) => {
 
 // eslint-disable-next-line consistent-return
 const openHouseModal = (cardID, player) => {
-  const fullProperties = getFullProperties(game.currentTurn);
+  const fullProperties = getOnlyFullProperties(game.currentTurn);
 
   if (fullProperties.length === 0) {
     return openRejectModal(cardID);
@@ -294,31 +294,66 @@ const openHotelModal = (cardID, player) => {
   // cardTypes.property[color].rentAmounts.length
 };
 
+// ============ Calculate Fullsets ============ //
+
 const getFullProperties = (player) => {
   const { properties } = game.playerHands[player];
   const availableProperties = Object.keys(properties);
+
+  console.log(properties);
+  const propertyColor = [];
+  for (const color of availableProperties) {
+    propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
+  }
   const fullProperties = [];
 
-  for (const color of availableProperties) {
-    if (properties[color].length === cardTypes.property[color].rentAmounts.length) {
+  for (let i = 0; i < availableProperties.length; i++) {
+    if (properties[availableProperties[i]].length >= cardTypes.property[propertyColor[i]].rentAmounts.length) {
       // TODO add fix for condition where it is second set
-      fullProperties.push(color);
+      fullProperties.push(propertyColor[i]);
     }
   }
+
+  return fullProperties;
+};
+
+const getOnlyFullProperties = (player) => {
+  const { properties } = game.playerHands[player];
+  const availableProperties = Object.keys(properties);
+  const propertyColor = [];
+
+  console.log(properties);
+  for (const color of availableProperties) {
+    propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
+  }
+  const fullProperties = [];
+
+  for (let i = 0; i < availableProperties.length; i++) {
+    if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length) {
+      // TODO add fix for condition where it is second set
+      fullProperties.push(propertyColor[i]);
+    }
+  }
+
   return fullProperties;
 };
 
 const getHousedProperties = (player) => {
   const { properties } = game.playerHands[player];
   const availableProperties = Object.keys(properties);
+  const propertyColor = [];
+  for (const color of availableProperties) {
+    propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
+  }
   const fullProperties = [];
 
-  for (const color of availableProperties) {
-    if (properties[color].length === cardTypes.property[color].rentAmounts.length + 1) {
-      // TODO add fix for condition where it is second set
-      fullProperties.push(color);
+  for (let i = 0; i < availableProperties.length; i++) {
+    if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length + 1) {
+    // TODO add fix for condition where it is second set
+      fullProperties.push(propertyColor[i]);
     }
   }
+
   return fullProperties;
 };
 
@@ -336,7 +371,7 @@ const birthdayParty = (color, player) => {};
 const makeSlyDeal = (color, player) => {};
 const makeforcedDeal = (color, player) => {};
 const collectDebt = (color, player) => {};
-const doubleRent = (color, player) => {};
+// const doubleRent = (color, player) => {};
 
 const addHotel = (cardID, color) => {
   const { hand, properties } = game.playerHands[game.currentTurn];
