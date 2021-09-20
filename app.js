@@ -32,19 +32,7 @@ class PlayerHand {
   }
 }
 
-// ============ Card Functions settings ============ //
-const rentAny = (color, player) => {};
-const rent = (color, player) => {};
-const sayNo = (color, player) => {};
-const dealBreak = (color, player) => {};
-const birthdayParty = (color, player) => {};
-const makeSlyDeal = (color, player) => {};
-const makeforcedDeal = (color, player) => {};
-const collectDebt = (color, player) => {};
-const doubleRent = (color, player) => {};
-const addHotel = (color, player) => {};
-const addHouse = (color, player) => {};
-const passGo = (color, player) => {};
+// ============ Card Movement Functions ============ //
 
 const addCardTo = (location, cardID, player) => {
   const { hand } = game.playerHands[player || game.currentTurn];
@@ -68,11 +56,16 @@ const addMoney = (cardID) => {
 //   addTurn();
 // };
 
+const discardCard = (cardID) => {
+  addCardTo(game.discardPile, cardID);
+  render();
+};
+
 const addProperty = (cardID, player) => {
   const { hand, properties } = game.playerHands[player || game.currentTurn];
   const target = hand.map((e) => e.id).indexOf(cardID);
   const pickedCard = hand[target];
-  console.log(pickedCard);
+  // console.log(pickedCard);
   let color = pickedCard.colors[0].split(' ').join('');
 
   if (typeof properties[color] === 'undefined') {
@@ -93,6 +86,7 @@ const openRentAnyModal = (title, content) => {
   const $modalBack = $('<div>').addClass('modalBase').prependTo('body');
   const $modal = $('<div>').addClass('modalCard').html(`
   `);
+
   // ${title && (<h1>${title}</h1>)}
   // <p>${content}</p>
   const $header = $('<h3>').text('Something').appendTo($modal);
@@ -141,6 +135,26 @@ const setWildPropCurrentColor = (color, card) => {
   const target = card.colors.indexOf(color);
   card.colors.unshift(...card.colors.splice(target, 1));
   card.rentAmounts.push(...rentAmount);
+};
+
+// ============ Card Functions ============ //
+
+const rentAny = (color, player) => {};
+const rent = (color, player) => {};
+const sayNo = (color, player) => {};
+const dealBreak = (color, player) => {};
+const birthdayParty = (color, player) => {};
+const makeSlyDeal = (color, player) => {};
+const makeforcedDeal = (color, player) => {};
+const collectDebt = (color, player) => {};
+const doubleRent = (color, player) => {};
+const addHotel = (color, player) => {};
+const addHouse = (color, player) => {};
+
+const passGo = (cardID, player) => {
+  drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2);
+  discardCard(cardID);
+  addTurn();
 };
 
 // ============ Computer Moves ============ //
@@ -269,7 +283,7 @@ const cardTypes = {
   //   '5M': new MoneyCard('5M', 5, 2),
   //   '10M': new MoneyCard('10M', 10, 1),
   // },
-  // actionCard: {
+  actionCard: {
   //   justSayNo: new Card('Just say no', 4, () => sayNo(), 3),
   //   dealBreaker: new Card('Deal breaker', 5, () => dealBreak(), 2),
   //   itsYourBirthday: new Card('It\'s Your Birthday', 2, () => birthdayParty(), 3),
@@ -279,8 +293,8 @@ const cardTypes = {
   //   doubleTheRent: new Card('Double the Rent', 1, () => doubleRent(), 2),
   //   hotel: new Card('Hotel', 4, () => addHotel(), 3),
   //   house: new Card('House', 2, () => addHouse(), 2),
-  //   passGo: new Card('Pass Go', 1, () => passGo(), 10),
-  // },
+    passGo: new Card('Pass Go', 1, (cardID) => passGo(cardID), 10),
+  },
   // rent: {
   //   any: new RentCard('Any', 3, 3, colors.allColors()),
   //   blueGreen: new RentCard('Blue-Green', 1, 2, [colors.blue, colors.green]),
