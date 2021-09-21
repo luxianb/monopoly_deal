@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-env jquery */
 
 // ============ Main Game settings ============ //
@@ -5,7 +6,7 @@ const game = {
   // numberOfPlayers: 1,
   numberOfPlayers: 4,
   userTurn: 0, // Index no. of User
-  currentTurn: 0,
+  currentTurn: 2,
 
   drawPile: [],
   discardPile: [],
@@ -127,6 +128,9 @@ const openRentAnyModal = (title, content) => {
 
 const openRentModal = (cardID, colors, player) => {
   // check if player has card needed to perform action
+  if (player !== game.userTurn) {
+    return computerRent(cardID, colors);
+  }
   const playerColors = Object.keys(
     game.playerHands[game.currentTurn].properties,
   );
@@ -184,12 +188,57 @@ const openRentModal = (cardID, colors, player) => {
   });
 };
 
+const computerRent = (cardID, color) => {
+  // get player info
+  const { properties } = game.playerHands[game.currentTurn];
+  const aviableColors = Object.keys(properties);
+  // Check if player has required color
+
+  //  If not, use as money
+  discardCard(cardID);
+  addTurn();
+};
+
+const computerAddHouse = (cardID) => {
+  const fullProperties = getOnlyFullProperties(game.currentTurn);
+  if (fullProperties.length === 0) {
+    return addMoney(cardID);
+  }
+
+  const pickedProperty = Math.floor(Math.random() * fullProperties.length);
+
+  return addHouse(cardID, pickedProperty);
+};
+
+const computerAddHotel = (cardID) => {
+  const fullProperties = getHousedProperties(game.currentTurn);
+  if (fullProperties.length === 0) {
+    return addMoney(cardID);
+  }
+
+  const pickedProperty = Math.floor(Math.random() * fullProperties.length);
+
+  return addHotel(cardID, pickedProperty);
+};
+
+const computerAddWildCard = (colors, pickedCard, cardID) => {
+  const index = Math.floor(Math.random() * colors.length);
+  const pickedColor = colors[index];
+
+  setWildPropCurrentColor(pickedColor, pickedCard);
+  addProperty(cardID);
+};
+
 const openRentResultModal = () => {};
 
-const openWildCardModal = (cardID, colors, player) => {
-  const { hand, properties } = game.playerHands[player || game.currentTurn];
+const openWildCardModal = (cardID, colors) => {
+  const { hand, properties } = game.playerHands[game.currentTurn];
   const target = hand.map((e) => e.id).indexOf(cardID);
   const pickedCard = hand[target];
+
+  if (game.currentTurn !== game.userTurn) {
+    return computerAddWildCard(colors, pickedCard, cardID);
+  }
 
   createModalBase('Use card as...');
   const $modal = $('.modalCard'); function closeModal() { $('.modalBase').remove(); }
@@ -224,6 +273,9 @@ const setWildPropCurrentColor = (color, card) => {
 // eslint-disable-next-line consistent-return
 const openHouseModal = (cardID, player) => {
   const fullProperties = getOnlyFullProperties(game.currentTurn);
+  if (game.currentTurn !== game.userTurn) {
+    return computerAddHouse(cardID);
+  }
 
   if (fullProperties.length === 0) {
     return openRejectModal(cardID);
@@ -262,6 +314,9 @@ const openHouseModal = (cardID, player) => {
 // eslint-disable-next-line consistent-return
 const openHotelModal = (cardID, player) => {
   const fullProperties = getHousedProperties(game.currentTurn);
+  if (game.currentTurn !== game.userTurn) {
+    return computerAddHotel(cardID);
+  }
 
   if (fullProperties.length === 0) {
     return openRejectModal(cardID);
@@ -570,13 +625,13 @@ const cardTypes = {
     // LightGreen: new PropertyCard('Light Green', 2, 2, [colors.lightGreen], [1, 2], ['Electric Company', 'Water Works']),
     // LightBlue: new PropertyCard('Light Blue', 1, 3, [colors.lightBlue], [1, 2, 3], ['Euston Road', 'The Angel Islington', 'Pentonville Road']),
     // any: new PropertyCard('Any', 0, 2, [...colors.allColors()]),
-    // brownLightBlue: new PropertyCard('Brown-Light Blue', 1, 1, [colors.brown, colors.lightBlue]),
-    // blackLightBlue: new PropertyCard('Black-Light Blue', 4, 1, [colors.black, colors.lightBlue]),
+    brownLightBlue: new PropertyCard('Brown-Light Blue', 1, 1, [colors.brown, colors.lightBlue]),
+    blackLightBlue: new PropertyCard('Black-Light Blue', 4, 1, [colors.black, colors.lightBlue]),
     orangePurple: new PropertyCard('Orange-Purple', 2, 2, [colors.orange, colors.purple]),
-    // redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.yellow, colors.red]),
-    // blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.green, colors.blue]),
-    // greenBlack: new PropertyCard('Green-Black', 4, 1, [colors.green, colors.black]),
-    // blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.lightGreen, colors.black]),
+    redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.yellow, colors.red]),
+    blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.green, colors.blue]),
+    greenBlack: new PropertyCard('Green-Black', 4, 1, [colors.green, colors.black]),
+    blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.lightGreen, colors.black]),
   },
 };
 
@@ -630,12 +685,18 @@ const drawCards = (source, hand, amount) => {
 
 /** @type {() => void} */
 const endTurn = () => {
-  const { numberOfPlayers, currentTurn } = game;
+  const { numberOfPlayers, currentTurn, userTurn } = game;
 
   if (currentTurn === numberOfPlayers - 1) {
     currentTurn = 0;
   } else {
     currentTurn++;
+  }
+  while (currentTurn !== userTurn) {
+    if (game.playerHands[currentTurn] === 1) {
+      drawCards(game.drawPile, game.playerHands[currentTurn].hand);
+    }
+    computerTurn(currentTurn);
   }
 };
 
@@ -682,6 +743,18 @@ function addTurn() {
   }
 }
 
+function computerTurn(player) {
+  const { hand } = game.playerHands[player];
+  const randomCard = Math.floor(Math.random() * hand.length);
+  // console.log('card index', randomCard);
+  const pickedCard = hand[randomCard];
+
+  // console.log(pickedCard);
+  // console.log(`Player ${player} played, ${pickedCard.name}`);
+  pickedCard.action(pickedCard.id);
+  // hand[randomCard].action();
+}
+
 // ============ Render Functions ============ //
 const renderCard = (parent, cardInfo, stackPosition) => {
   const $cardContainer = $('<div>')
@@ -711,14 +784,15 @@ const renderOtherCard = (parent, cardInfo, hideInfo, stackPosition) => {
     .hover((e) => {
       e.stopPropagation();
       $(e.currentTarget).toggleClass('cardToFront');
-    });
+    })
+    .on('click', () => cardInfo.action(cardInfo.id));
 
   if (hideInfo) {
     $cardContainer.addClass('card-back');
   }
 
   if (stackPosition > 0) {
-    $cardContainer.css('top', stackPosition * 30)
+    $cardContainer.css('top', stackPosition * 15)
       .css('position', 'absolute');
   }
 
@@ -828,7 +902,7 @@ const renderOtherPlayerProperty = (player) => {
   for (const color in properties) {
     $('<div>').addClass('propertyCardPile').attr('id', `${id}${color}`).appendTo(`#${id}Property`);
     for (let i = 0; i < properties[color].length; i++) {
-      renderOtherCard(`#${id}${color}`, properties[color][i], i);
+      renderOtherCard(`#${id}${color}`, properties[color][i], false, i);
     }
   }
 };
@@ -913,8 +987,9 @@ const main = () => {
       renderOtherPlayerHand(i);
     }
   }
+  $('#endTurn').on('click', () => endTurn());
   console.log(game);
-  // openRentAnyModal();
+  computerTurn(2);
 };
 
 $(main);
