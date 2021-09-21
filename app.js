@@ -2,7 +2,8 @@
 
 // ============ Main Game settings ============ //
 const game = {
-  numberOfPlayers: 1,
+  // numberOfPlayers: 1,
+  numberOfPlayers: 4,
   userTurn: 0, // Index no. of User
   currentTurn: 0,
 
@@ -22,17 +23,18 @@ const modal = {
 };
 
 // ============ Classes ============ //
+const characterNames = ['Sir Battleship', 'Mdm Cat', 'Mr Tophat', 'Ms Racecar', 'Mr Moneybag'];
 class PlayerHand {
-  constructor(playerId) {
+  constructor(playerName) {
     this.hand = [];
     this.money = [];
     // this.properties = { Purple: [{}, {}, {}] };
     this.properties = { };
     this.turn = 1;
-    this.playerId = playerId || '';
+    this.playerName = playerName || 'user';
+    this.playerId = playerName.toLowerCase().split(' ').join('') || 'user';
   }
 }
-
 // ============ Card Movement Functions ============ //
 
 const addCardTo = (location, cardID, player) => {
@@ -257,6 +259,7 @@ const openHouseModal = (cardID, player) => {
   // cardTypes.property[color].rentAmounts.length
 };
 
+// eslint-disable-next-line consistent-return
 const openHotelModal = (cardID, player) => {
   const fullProperties = getHousedProperties(game.currentTurn);
 
@@ -300,7 +303,7 @@ const getFullProperties = (player) => {
   const { properties } = game.playerHands[player];
   const availableProperties = Object.keys(properties);
 
-  console.log(properties);
+  // console.log(properties);
   const propertyColor = [];
   for (const color of availableProperties) {
     propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
@@ -322,7 +325,7 @@ const getOnlyFullProperties = (player) => {
   const availableProperties = Object.keys(properties);
   const propertyColor = [];
 
-  console.log(properties);
+  // console.log(properties);
   for (const color of availableProperties) {
     propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
   }
@@ -638,7 +641,9 @@ const endTurn = () => {
 
 const createPlayerHands = (amount) => {
   for (let i = 0; i < amount; i++) {
-    game.playerHands.push(new PlayerHand(`player${i}`));
+    const randomName = characterNames.splice(Math.floor(Math.random() * characterNames.length), 1);
+    // game.playerHands.push(new PlayerHand(`player${i}`));
+    game.playerHands.push(new PlayerHand(...randomName));
   }
 };
 
@@ -660,6 +665,11 @@ const setUpGame = () => {
   // randomizeUserTurn()
   initialiseHands(game.numberOfPlayers);
   // renderCards()
+  for (let i = 0; i < game.numberOfPlayers; i++) {
+    if (i !== game.userTurn) {
+      renderOtherPlayerField(i);
+    }
+  }
 };
 
 function addTurn() {
@@ -688,9 +698,31 @@ const renderCard = (parent, cardInfo, stackPosition) => {
     $cardContainer.css('top', stackPosition * 30)
       .css('position', 'absolute');
   }
-  // if (cardInfo) {
-  //   $cardContainer
-  // }
+};
+
+const renderOtherCard = (parent, cardInfo, hideInfo, stackPosition) => {
+  // console.log(parent, cardInfo);
+  const $cardContainer = $('<div>')
+    .addClass('otherPCard card')
+    .attr('id', cardInfo.id)
+    .text(`
+      ${cardInfo.name} \n ${cardInfo.type}
+    `)
+    .hover((e) => {
+      e.stopPropagation();
+      $(e.currentTarget).toggleClass('cardToFront');
+    });
+
+  if (hideInfo) {
+    $cardContainer.addClass('card-back');
+  }
+
+  if (stackPosition > 0) {
+    $cardContainer.css('top', stackPosition * 30)
+      .css('position', 'absolute');
+  }
+
+  $cardContainer.appendTo($(parent));
 };
 
 const renderPileCard = (parent, deck, position) => {
@@ -740,6 +772,65 @@ const renderProperty = () => {
     }
   }
   // }
+};
+
+// ============ Render Computer field ============ //
+const renderOtherPlayerField = (player) => {
+  const { playerId: id } = game.playerHands[player];
+  const $parent = $('.otherPlayerFields');
+
+  const $playerField = $('<div>').attr('id', `${id}-field`).addClass('otherField')
+    .html(`
+    <div class="otherMoneyPile">
+      <div id="${id}Money" class="otherCardPile"></div>
+        <div class="row">
+          <p id="${id}MoneyTotal">Total: 0</p>
+        </div>
+    </div>
+
+    <div class="otherHand">
+      <div id="${id}Hand" class="otherCardPile"></div>
+      <div class="row"> </div>
+    </div>
+
+  <div class="otherPropertyPile">
+    <div id="${id}Property" class="otherCardPile"></div>
+    <div class="row"></div>
+  </div>
+  `);
+
+  $playerField.appendTo($parent);
+};
+
+const renderOtherPlayerHand = (player) => {
+  const { playerId: id, hand, money, properties } = game.playerHands[player];
+  $(`#${id}Hand`).children().remove();
+
+  for (const card of hand) {
+    renderOtherCard(`#${id}Hand`, card, true);
+  }
+};
+const renderOtherPlayerMoney = (player) => {
+  const { playerId: id, money } = game.playerHands[player];
+  $(`#${id}Money`).children().remove();
+
+  if (money.length > 0) {
+    for (const card of money) {
+      renderOtherCard(`#${id}Money`, card);
+    }
+  }
+};
+
+const renderOtherPlayerProperty = (player) => {
+  const { playerId: id, properties } = game.playerHands[player];
+  $(`#${id}Property`).children().remove();
+
+  for (const color in properties) {
+    $('<div>').addClass('propertyCardPile').attr('id', `${id}${color}`).appendTo(`#${id}Property`);
+    for (let i = 0; i < properties[color].length; i++) {
+      renderOtherCard(`#${id}${color}`, properties[color][i], i);
+    }
+  }
 };
 
 const calculateTotalMoney = (player) => {
@@ -803,12 +894,25 @@ function render() {
   renderMoney();
   renderProperty();
   renderMoneyTotal();
+
+  for (let i = 0; i < game.numberOfPlayers; i++) {
+    if (i !== game.userTurn) {
+      renderOtherPlayerHand(i);
+      renderOtherPlayerProperty(i);
+      renderOtherPlayerMoney(i);
+    }
+  }
 }
 
 const main = () => {
   setUpGame();
   renderCardPile();
   renderPlayerHand();
+  for (let i = 0; i < game.numberOfPlayers; i++) {
+    if (i !== game.userTurn) {
+      renderOtherPlayerHand(i);
+    }
+  }
   console.log(game);
   // openRentAnyModal();
 };
