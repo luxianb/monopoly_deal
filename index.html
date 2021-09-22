@@ -14,8 +14,25 @@
     <div class="otherPlayerFields"></div>
     
     <div class="field">
-      <div id="drawPile" class="cardPile"></div>
-      <div id="discardPile" class="cardPile"></div>
+      <!-- Draw Pile -->
+      <div class="pileContainer">
+        <div class="pileContainer">
+          <div id="drawPile" class="cardPile">
+          </div>
+          <p class="pileLabel">Draw Pile</p>
+        </div>
+        <p small id="drawPileIndicator"></p>
+      </div>
+      
+      <!-- Discard Pile -->
+      <div class="pileContainer">
+        <div class="pileContainer">
+          <div id="discardPile" class="cardPile">
+          </div>
+          <p class="pileLabel">Discard Pile</p>
+        </div>
+        <p small id="discardPileIndicator"></p>
+      </div>
     </div>
 
     <div class="playerField">

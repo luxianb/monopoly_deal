@@ -21,7 +21,7 @@ h1, h2, h3, h4 {
 }
 
 div {
-  border: 1px solid black;
+  /* border: 1px solid black; */
   display: flex;
   /* flex-direction: row; */
 }
@@ -33,15 +33,33 @@ main {
   flex: 1;
 }
 
+.pileContainer {
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .cardPile {
   height: 200px;
   width: 125px;
   border-radius: 6px;
   background-color: rgba(0, 0, 0, 0.1);
+  /* align-items: center; */
+}
+
+.pileContainer:last-child {
+  margin-left: 50px;
+}
+
+.pileLabel {
+  position: absolute;
+  z-index: -10;
+  margin-bottom: 16px;
+  opacity: 0.5;
 }
 
 #drawPile {
-  margin-right: 50px;
+  /* margin-right: 50px; */
   position: relative;
 }
 
@@ -191,9 +209,31 @@ main {
   margin-bottom: 0;
 }
 
+
 .modalBase button {
+  background-color: #bbdefb;
+  height: 30px;
+  color: #1976d2;
+  border: 0;
+  border-radius: 3px;
+  flex: 1;
+  cursor: pointer;
   margin-bottom: 16px;
 }
+
+.modalBase h3 {
+  text-transform: uppercase;
+}
+
+.modalBase button:last-child {
+  margin-left: 8px;
+}
+
+.modalBase p {
+  margin: 0;
+  margin-bottom: 6px;
+}
+
 
 .rentBalance {
   font-size: 3rem;

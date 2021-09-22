@@ -597,24 +597,19 @@ const openHotelModal = (cardID, player) => {
 
 // ============ Calculate Fullsets ============ //
 
+/** @type {(player: number) => string[]}
+ * @description Take in player index and return an array of the name of completed sets
+*/
 const getFullProperties = (player) => {
   const { properties } = game.playerHands[player];
-  console.log(properties);
-  const availableProperties = Object.keys(properties);
-
-  // console.log(properties);
-  const propertyColor = [];
   const fullProperties = [];
-  if (availableProperties.length > 0) {
-    for (const color of availableProperties) {
-      propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
-    }
 
-    for (let i = 0; i < availableProperties.length; i++) {
-      if (properties[availableProperties[i]].length >= cardTypes.property[propertyColor[i]].rentAmounts.length) {
-      // TODO add fix for condition where it is second set
-        fullProperties.push(propertyColor[i]);
-      }
+  // ? Check through all PLAYER sets
+  for (const setName in properties) {
+    const set = properties[setName];
+    // * If set lenght is same as rent amount length return set name
+    if (set.length >= set[0].rentAmounts.length) {
+      fullProperties.push(setName);
     }
   }
 
@@ -1026,7 +1021,7 @@ const setUpGame = () => {
   // renderCards()
   for (let i = 0; i < game.numberOfPlayers; i++) {
     if (i !== game.userTurn) {
-      renderOtherPlayerField(i);
+      rend(i);
     }
   }
 };
@@ -1120,10 +1115,9 @@ const renderPileCard = (parent, deck, position) => {
   const $cardContainer = $('<div>')
     .addClass('card').addClass('card-back').addClass('piled-card')
     .appendTo(parent)
-    .css('left', position * 0.25)
-    .text(deck.length)
-    .on('click', () => drawCards(deck, game.playerHands[game.currentTurn].hand, 1));
-    // .on('click', () => cardFunction())
+    .css('left', position * 0.25);
+    // .text(deck.length)
+    // .on('click', () => drawCards(deck, game.playerHands[game.currentTurn].hand, 1));
 };
 
 const renderPlayerHand = () => {
@@ -1162,7 +1156,7 @@ const renderMoney = () => {
 };
 
 const renderMoneyTotal = () => {
-  $('#userMoneyTotal').text(`Total: ${calculateTotalMoney(game.userTurn)}`);
+  $('#userMoneyTotal').text(`Total: ${calculateTotalMoney(game.userTurn)}M`);
 };
 
 const renderProperty = () => {
@@ -1182,7 +1176,7 @@ const renderProperty = () => {
 };
 
 // ============ Render Computer field ============ //
-const renderOtherPlayerField = (player) => {
+const rend = (player) => {
   const { playerId: id } = game.playerHands[player];
   const $parent = $('.otherPlayerFields');
 
@@ -1191,7 +1185,7 @@ const renderOtherPlayerField = (player) => {
     <div class="otherMoneyPile">
       <div id="${id}Money" class="otherCardPile"></div>
         <div class="row">
-          <p id="${id}MoneyTotal">Total: 0</p>
+          <p id="${id}MoneyTotal">Total: 0M</p>
         </div>
     </div>
 
@@ -1222,14 +1216,8 @@ const renderOtherPlayerMoney = (player) => {
   money.sort((a, b) => a.value - b.value);
   $(`#${id}Money`).children().remove();
 
-  // if (money.length > 0) {
-  //   for (const card of money) {
-  //     renderOtherCard(`#${id}Money`, card);
-  //   }
-  // }
-
   const moneyStacks = {};
-  // console.log(money);
+
   money.map((card) => {
     if (typeof moneyStacks[`${card.value}M`] === 'undefined') {
       moneyStacks[`${card.value}M`] = [];
@@ -1243,6 +1231,12 @@ const renderOtherPlayerMoney = (player) => {
       renderOtherCard(`#${key}${id}`, moneyStacks[key][i], false, i);
     }
   }
+};
+
+const renderOtherPlayerMoneyTotal = (player) => {
+  const { playerId: id } = game.playerHands[player];
+
+  $(`#${id}MoneyTotal`).html(`Total: ${calculateTotalMoney(player)}M`);
 };
 
 const renderOtherPlayerProperty = (player) => {
@@ -1310,6 +1304,10 @@ const calculatePropertyRentValue = (player, color) => {
   return total;
 };
 
+function removeEmptySpace(string) {
+  return string.split(' ').join('');
+}
+
 // console.log(game.playerHands[0])
 
 const renderCardPile = () => {
@@ -1319,9 +1317,11 @@ const renderCardPile = () => {
     const element = game.drawPile[i];
     renderPileCard('#drawPile', game.drawPile, i);
   }
+  $('#drawPileIndicator').text(`${game.drawPile.length} cards left`);
   for (const card of game.discardPile) {
     renderPileCard('#discardPile', game.discardPile);
   }
+  $('#discardPileIndicator').text(`${game.discardPile.length} cards`);
 };
 
 function render() {
@@ -1336,6 +1336,7 @@ function render() {
       renderOtherPlayerHand(i);
       renderOtherPlayerProperty(i);
       renderOtherPlayerMoney(i);
+      renderOtherPlayerMoneyTotal(i);
     }
   }
   // console.log(game);
