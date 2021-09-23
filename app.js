@@ -608,8 +608,9 @@ const getFullProperties = (player) => {
   // ? Check through all PLAYER sets
   for (const setName in properties) {
     const set = properties[setName];
+    // console.log(set);
     // * If set lenght is same as rent amount length return set name
-    if (set.length >= set[0].rentAmounts.length) {
+    if (set.length >= set[0]?.rentAmounts.length) {
       fullProperties.push(setName);
     }
   }
@@ -1134,7 +1135,7 @@ const renderCard = (parent, cardInfo, stackPosition) => {
     .css('background-size', 'contain')
     .hover((e) => {
       e.stopPropagation();
-      $(e.currentTarget).toggleClass('cardToFront');
+      $(e.currentTarget).toggleClass('cardToFront focusCard');
     });
   if (stackPosition > 0) {
     $cardContainer.css('top', stackPosition * 30)
@@ -1146,17 +1147,17 @@ const renderOtherCard = (parent, cardInfo, hideInfo, stackPosition) => {
   // console.log(parent, cardInfo);
   const $cardContainer = $('<div>')
     .addClass('otherPCard card')
-    .attr('id', cardInfo.id)
+    .attr('id', cardInfo.id);
     // .text(` ${cardInfo.name} \n ${cardInfo.type} `)
-    .hover((e) => {
-      e.stopPropagation();
-      $(e.currentTarget).toggleClass('cardToFront');
-    })
-    .on('click', () => cardInfo.action(cardInfo.id));
+    // .on('click', () => cardInfo.action(cardInfo.id));
   if (!hideInfo) {
     $cardContainer
       .css('background-image', `url(${cardInfo.image[0]})`)
-      .css('background-size', 'contain');
+      .css('background-size', 'contain')
+      .hover((e) => {
+        e.stopPropagation();
+        $(e.currentTarget).toggleClass('cardToFront focusOtherCard');
+      });
   }
   if (hideInfo) {
     $cardContainer

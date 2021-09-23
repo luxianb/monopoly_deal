@@ -81,19 +81,19 @@ main {
   height: 80px;
   width: 50px;
   font-size: 0.75rem;
+  cursor: default;
 }
 
 .card-back {
-  /* background-color: #bbdefb; */
   background-image: url(./assets/cardBack.png);
   background-size: cover;
-  /* background; */
 }
 .piled-card {
   height: 200px;
   width: 125px;
   position: absolute;
   box-shadow: 0 0 4px rgba(0, 0, 0, .15);
+  cursor: default;
 }
 
 #userHand, #userProperty, #userMoney {
@@ -123,13 +123,6 @@ main {
 .playerField .hand {
   flex: 1.5;
 }
-/* .playerField div  div{
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  flex-basis: content;
-} */
 
 .otherPlayerFields {
   height: 200px;
@@ -177,6 +170,16 @@ main {
 
 .cardToFront {
   z-index: 50;
+}
+
+.focusCard, .focusOtherCard {
+  animation: animateFocus 150ms;
+  animation-fill-mode: forwards;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes animateFocus {
+  to {transform: scale(1.8);}
 }
 
 .wildPropChoiceContainer {
