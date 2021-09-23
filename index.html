@@ -16,7 +16,7 @@
     
     <div class="field">
       <!-- Draw Pile -->
-      <div class="pileContainer">
+      <div class="pileContainer" id="drawPileContainer">
         <div class="pileContainer">
           <div id="drawPile" class="cardPile">
           </div>
@@ -26,13 +26,18 @@
       </div>
       
       <!-- Discard Pile -->
-      <div class="pileContainer">
+      <div class="pileContainer" id="discardPileContainer">
         <div class="pileContainer">
           <div id="discardPile" class="cardPile">
           </div>
           <p class="pileLabel">Discard Pile</p>
         </div>
         <p small id="discardPileIndicator"></p>
+      </div>
+
+      <div id="gameLogContainer">
+        <div id="gameLogLabel">Game Log</div>
+        <div id="logTextContainer"> </div>
       </div>
     </div>
 

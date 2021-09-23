@@ -10,11 +10,13 @@ const game = {
   userTurn: 0, // Index no. of User
   currentTurn: 0,
   setsToWin: 3,
+  log: '',
 
   drawPile: [],
   discardPile: [],
 
   playerHands: [],
+
 };
 
 // ============ Classes ============ //
@@ -72,6 +74,7 @@ const discardCard = (cardID) => {
 const addProperty = (cardID) => {
   const { hand, properties } = game.playerHands[game.currentTurn];
   const target = hand.map((e) => e.id).indexOf(cardID);
+  // const target = hand.map((e) => e.id).indexOf(cardID);
   const pickedCard = hand[target];
   // console.log(pickedCard);
   let color = pickedCard.colors[0].split(' ').join('');
@@ -169,7 +172,10 @@ const openRentModal = (cardID, colors) => {
   // * if is PLAYER, get information of their sets
   const { properties, hand } = game.playerHands[game.userTurn];
   const availbleProperties = [];
-  for (const set of Object.keys(properties)) { availbleProperties.push(set[0].colors[0]); }
+  for (const set of Object.keys(properties)) {
+    // console.log(set);
+    availbleProperties.push(properties[set][0].colors[0]);
+  }
   // const pickedCard = hand.filter((card) => card.id === cardID)[0];
 
   // ?  ==== Render Rent Payment Modal ==== ? //
@@ -182,17 +188,22 @@ const openRentModal = (cardID, colors) => {
     let propertyAvailble = false;
     let setTotal = 0;
     for (const sets of availbleProperties) {
-      setTotal = calculatePropertyRentValue(game.currentTurn, removeEmptySpace(color));
-      propertyAvailble = true;
+      if (sets === removeEmptySpace(color)) {
+        setTotal = calculatePropertyRentValue(game.currentTurn, sets);
+        propertyAvailble = true;
+      }
     }
 
     const $selectionOption = $('<div>').addClass('wildPropChoice').appendTo($choiceContainer);
     const $choiceDisplay = $('<div>').addClass('wildPropDisplay').appendTo($selectionOption)
       .css('background-color', colorToHex('grey'))
+      .css('color', 'darkGrey')
       .text(color);
 
     if (propertyAvailble) {
-      $choiceDisplay.css('background-color', colorToHex(color));
+      $choiceDisplay
+        .css('background-color', colorToHex(color))
+        .css('color', color === colors.lightGreen || color === colors.lightBlue ? 'black' : 'white');
       $('<p>').addClass('propertyValueDisplay').text(`${setTotal}M`).appendTo($selectionOption);
       $selectionOption.on('click', () => handleSelectionClick(setTotal));
     }
@@ -213,68 +224,6 @@ const openRentModal = (cardID, colors) => {
     closeModal();
     addMoney(cardID);
   }
-};
-
-const openRentModal2 = (cardID, colors, player) => {
-  // check if player has card needed to perform action
-  if (game.currentTurn !== game.userTurn) {
-    return computerRent(cardID, colors);
-  }
-  const playerColors = Object.keys(
-    game.playerHands[game.currentTurn].properties,
-  );
-
-  const { hand, properties } = game.playerHands[player || game.currentTurn];
-  const target = hand.map((e) => e.id).indexOf(cardID);
-  const pickedCard = hand[target];
-
-  createModalBase('Select a set to rent with');
-  const $modal = $('.modalCard'); function closeModal() { $('.modalBase').remove(); }
-
-  const $choiceContainer = $('<div>').addClass('modalChoiceContainer').appendTo($modal);
-
-  // eslint-disable-next-line array-callback-return
-  colors.forEach((cardColor, index, array) => {
-    const normalizedColor = cardColor.split(' ').join('');
-    let propertyAvailble = false;
-    let setTotal = 0;
-
-    // check if there is property
-    for (const playerColor of playerColors) {
-      if (normalizedColor === playerColor) {
-        setTotal = calculatePropertyRentValue(game.currentTurn, normalizedColor);
-        propertyAvailble = true;
-      }
-    }
-
-    const $selectionOption = $('<div>').addClass('wildPropChoice').appendTo($choiceContainer);
-
-    const $choiceDisplay = $('<div>').addClass('wildPropDisplay').appendTo($selectionOption)
-      .css('background-color', colorToHex('grey'));
-
-    $('<p>').text(cardColor).appendTo($choiceDisplay);
-
-    if (index === array.length - 1) {
-      $selectionOption.addClass('last');
-    }
-
-    if (propertyAvailble) {
-      $choiceDisplay.css('background-color', colorToHex(cardColor));
-      $('<p>').addClass('propertyValueDisplay').text(`${setTotal}M`).appendTo($selectionOption);
-      $selectionOption.on('click', () => {
-        closeModal();
-        rent(cardID, setTotal);
-      });
-    }
-  });
-  // render options for player to choose
-  const $buttonRow = $('<div>').addClass('row').appendTo($modal);
-
-  $('<button>').text('Back').appendTo($buttonRow).on('click', () => closeModal());
-  $('<button>').text('Use as Money').appendTo($buttonRow).on('click', () => {
-    closeModal();
-    addMoney(cardID);
-  });
 };
 
 const openPayRentModal = (cardID, rentAmount) => {
@@ -421,33 +370,13 @@ const openPayRentModal = (cardID, rentAmount) => {
   }
 };
 
-// const renderRentPaySeletionItems = (parent, data, fxn) => {
-//   parent.children().remove();
-
-//   data.map((card, index, array) => {
-//     const $selectionOption = $('<div>').addClass('rentPayChoice')
-//       .on('click', (e) => {
-//         fxn(card, array);
-//         e.currentTarget.toggleClass('optionSelected');
-//       }) // TODO add function here
-//       .appendTo(parent);
-
-//     const $choiceDisplay = $('<div>').addClass('rentPayDisplay').appendTo($selectionOption)
-//       .css('background-color', colorToHex('grey'));
-
-//     $('<p>').text(`${card.value}M`).appendTo($selectionOption);
-
-//     if (index === array.length - 1) {
-//       $selectionOption.addClass('last');
-//     }
-//   });
-// };
-
 const openWinModal = (winnerIndex) => {
   const win = winnerIndex === game.userTurn;
 
-  createModalBase(win ? 'Congratulations!' : 'You Loss');
-  const $modal = $('.modalCard'); function closeModal() { $('.modalBase').remove(); }
+  const $modalBack = $('<div>').addClass('modalBase').prependTo('body');
+  const $modal = $('<div>').addClass('modalCard').appendTo($modalBack);
+  const $header = $('<h3>').text(win ? 'Congratulations!' : 'You Loss').appendTo($modal);
+  // function closeModal() { $('.modalBase').remove(); }
 
   $('<p>').text(win
     ? 'Congrats you won!'
@@ -505,7 +434,7 @@ const computerRent = (cardID, color) => {
 
 const computerAddHouse = (cardID) => {
   // Get sets that contain full set of cards
-  const fullProperties = getOnlyFullProperties(game.currentTurn);
+  const fullProperties = getProperties(game.currentTurn, 'fitForHouse');
   // If condition not fufiled use as cash
   if (fullProperties.length === 0) {
     return addMoney(cardID);
@@ -517,7 +446,7 @@ const computerAddHouse = (cardID) => {
 };
 
 const computerAddHotel = (cardID) => {
-  const fullProperties = getHousedProperties(game.currentTurn);
+  const fullProperties = getProperties(game.currentTurn, 'fitForHotel');
   if (fullProperties.length === 0) {
     return addMoney(cardID);
   }
@@ -577,12 +506,14 @@ const setWildPropCurrentColor = (color, card) => {
   const target = card.colors.indexOf(color);
   card.colors.unshift(...card.colors.splice(target, 1));
   card.image.unshift(...card.image.splice(target, 1));
+  // console.log(rentAmount);
   card.rentAmounts.push(...rentAmount);
+  // console.log(card);
 };
 
 // eslint-disable-next-line consistent-return
 const openHouseModal = (cardID, player) => {
-  const fullProperties = getOnlyFullProperties(game.currentTurn);
+  const fullProperties = getProperties(game.currentTurn, 'fitForHouse');
   if (game.currentTurn !== game.userTurn) {
     return computerAddHouse(cardID);
   }
@@ -623,7 +554,7 @@ const openHouseModal = (cardID, player) => {
 
 // eslint-disable-next-line consistent-return
 const openHotelModal = (cardID, player) => {
-  const fullProperties = getHousedProperties(game.currentTurn);
+  const fullProperties = getProperties(game.currentTurn, 'fitForHotel');
   if (game.currentTurn !== game.userTurn) {
     return computerAddHotel(cardID);
   }
@@ -664,65 +595,102 @@ const openHotelModal = (cardID, player) => {
 
 // ============ Calculate Fullsets ============ //
 
-/** @type {(player: number) => string[]}
+/** @type {(player: number, condition: 'full' | 'fitForHouse' | 'fitForHotel' | 'notFull') => string[]}
  * @description Take in player index and return an array of the name of completed sets
 */
-const getFullProperties = (player) => {
+const getProperties = (player, condition) => {
   const { properties } = game.playerHands[player];
-  const fullProperties = [];
+  const filteredProperties = [];
 
   // ? Check through all PLAYER sets
   for (const setName in properties) {
     const set = properties[setName];
-    // console.log(set);
-    // * If set lenght is same as rent amount length return set name
-    if (set.length >= set[0]?.rentAmounts.length) {
-      fullProperties.push(setName);
+
+    // * based on condition return property that fits criteria
+    switch (condition) {
+      case 'full':
+        if (set.length >= set[0]?.rentAmounts.length) {
+          filteredProperties.push(setName);
+        }
+        break;
+      case 'fitForHouse':
+        if (set.length === set[0]?.rentAmounts.length) {
+          filteredProperties.push(setName);
+        }
+        break;
+      case 'fitForHotel':
+        if (set.length === set[0]?.rentAmounts.length + 1) {
+          filteredProperties.push(setName);
+        }
+        break;
+      case 'notFull':
+        if (set.length < set[0]?.rentAmounts.length) {
+          filteredProperties.push(setName);
+        }
+        break;
+      default: return filteredProperties;
     }
   }
 
-  return fullProperties;
+  return filteredProperties;
 };
 
-const getOnlyFullProperties = (player) => {
-  const { properties } = game.playerHands[player];
-  const availableProperties = Object.keys(properties);
-  const propertyColor = [];
+// const getFullProperties = (player) => {
+//   const { properties } = game.playerHands[player];
+//   const fullProperties = [];
 
-  // console.log(properties);
-  for (const color of availableProperties) {
-    propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
-  }
-  const fullProperties = [];
+//   // ? Check through all PLAYER sets
+//   for (const setName in properties) {
+//     const set = properties[setName];
+//     // console.log(set);
+//     // * If set lenght is same as rent amount length return set name
+//     if (set.length >= set[0]?.rentAmounts.length) {
+//       fullProperties.push(setName);
+//     }
+//   }
 
-  for (let i = 0; i < availableProperties.length; i++) {
-    if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length) {
-      // TODO add fix for condition where it is second set
-      fullProperties.push(propertyColor[i]);
-    }
-  }
+//   return fullProperties;
+// };
 
-  return fullProperties;
-};
+// const getOnlyFullProperties = (player) => {
+//   const { properties } = game.playerHands[player];
+//   const availableProperties = Object.keys(properties);
+//   const propertyColor = [];
 
-const getHousedProperties = (player) => {
-  const { properties } = game.playerHands[player];
-  const availableProperties = Object.keys(properties);
-  const propertyColor = [];
-  for (const color of availableProperties) {
-    propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
-  }
-  const fullProperties = [];
+//   // console.log(properties);
+//   for (const color of availableProperties) {
+//     propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
+//   }
+//   const fullProperties = [];
 
-  for (let i = 0; i < availableProperties.length; i++) {
-    if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length + 1) {
-    // TODO add fix for condition where it is second set
-      fullProperties.push(propertyColor[i]);
-    }
-  }
+//   for (let i = 0; i < availableProperties.length; i++) {
+//     if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length) {
+//       // TODO add fix for condition where it is second set
+//       fullProperties.push(propertyColor[i]);
+//     }
+//   }
 
-  return fullProperties;
-};
+//   return fullProperties;
+// };
+
+// const getHousedProperties = (player) => {
+//   const { properties } = game.playerHands[player];
+//   const availableProperties = Object.keys(properties);
+//   const propertyColor = [];
+//   for (const color of availableProperties) {
+//     propertyColor.push(properties[color][0].colors[0].split(' ').join(''));
+//   }
+//   const fullProperties = [];
+
+//   for (let i = 0; i < availableProperties.length; i++) {
+//     if (properties[availableProperties[i]].length === cardTypes.property[propertyColor[i]].rentAmounts.length + 1) {
+//     // TODO add fix for condition where it is second set
+//       fullProperties.push(propertyColor[i]);
+//     }
+//   }
+
+//   return fullProperties;
+// };
 
 // ============ Card Functions ============ //
 
@@ -803,7 +771,7 @@ const computerPayRent = (rentAmount, player) => {
 
   // ? If PLAYER has enought money to fufill rent
   if (rentAmount <= info.playerBalance.money) {
-    while (info.rent.amountLeft > 0) {
+    while (info.rent.amountLeft > 0 && money.length > 0) {
       // console.log('money value', money[0].value);
       info.rent.amountLeft -= money[0].value;
       info.selected.money.push(money.pop());
@@ -822,7 +790,8 @@ const computerPayRent = (rentAmount, player) => {
   }
   // * If availble draw properties from PLAYER hand, till none are left of rent is paid
   if (sProperties.length > 0) {
-    while (sProperties.length > 0 || info.rent.amountLeft > 0) {
+    // eslint-disable-next-line no-mixed-operators
+    while (sProperties.length > 0 || info.rent.amountLeft > 0 && sProperties.length > 0) {
       info.rent.amountLeft -= sProperties[0].value;
       info.selected.properties.push(sProperties.pop());
     }
@@ -869,7 +838,9 @@ const colorToHex = (color) => {
     case colors.green: return '#388E3C';
     case colors.brown: return '#6D4C41';
     case colors.lightBlue: return '#E1F5FE';
+    case 'LightBlue': return '#E1F5FE';
     case colors.lightGreen: return '#E0F2F1';
+    case 'LightGreen': return '#E0F2F1';
     case colors.black: return '#000000';
     case colors.purple: return '#9C27B0';
     case colors.orange: return '#FFA726';
@@ -1109,8 +1080,14 @@ const endTurn = () => {
     game.currentTurn += 1;
   }
 
-  drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2);
+  // ? Draw cards at start of next turn
+  if (game.playerHands[game.currentTurn].hand.length === 0) {
+    drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 5);
+  } else {
+    drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2);
+  }
 
+  // ? Then initiate computer turn if not user's turn
   if (game.currentTurn !== game.userTurn) {
     computerTurn(game.currentTurn);
   }
@@ -1144,18 +1121,21 @@ const setUpGame = () => {
   // renderCards()
   for (let i = 0; i < game.numberOfPlayers; i++) {
     if (i !== game.userTurn) {
-      rend(i);
+      renderOtherPlayerField(i);
     }
   }
 };
 
 function addTurn() {
   const player = game.playerHands[game.currentTurn];
-  // console.log(player);
+
   checkWin();
   // Update player turn once actions cards are up
   if (player.turn === 3) {
     player.turn = 1;
+    if (game.currentTurn !== game.userTurn) {
+      logAction(`- - - - ${player.playerName} turn ends - - - -`);
+    }
     endTurn();
   } else {
     player.turn += 1;
@@ -1167,9 +1147,7 @@ function addTurn() {
 
 const checkWin = () => {
   for (let playerIndex = 0; playerIndex < game.numberOfPlayers; playerIndex++) {
-    const fullSets = getFullProperties(playerIndex);
-
-    // console.log(fullSets);
+    const fullSets = getProperties(playerIndex, 'full');
 
     if (fullSets.length >= game.setsToWin) {
       return openWinModal(playerIndex);
@@ -1178,16 +1156,17 @@ const checkWin = () => {
 };
 
 function computerTurn(player) {
-  const { hand } = game.playerHands[player];
+  const { hand, playerName } = game.playerHands[player];
   const randomCard = Math.floor(Math.random() * hand.length);
-  // console.log('card index', randomCard);
   const pickedCard = hand[randomCard];
 
-  // console.log(pickedCard);
   if (game.currentTurn !== game.userTurn) {
-    console.log(`Player ${player} played, ${pickedCard.name}`);
+    if (hand.length === 0) {
+      return endTurn();
+    }
+    logAction(`<b>${playerName}</b> played <b>${pickedCard.name}</b>`);
+    // console.log(`Player ${player} played, ${pickedCard.name}`);
     pickedCard.action(pickedCard.id);
-  // hand[randomCard].action();
   }
 }
 
@@ -1302,7 +1281,7 @@ const renderMoneyTotal = () => {
 };
 
 const renderFullSets = () => {
-  $('#userFullSets').text(`${getFullProperties(game.userTurn).length}`);
+  $('#userFullSets').text(`${getProperties(game.userTurn, 'full').length}`);
 };
 
 const renderProperty = () => {
@@ -1321,8 +1300,14 @@ const renderProperty = () => {
   // }
 };
 
+const logAction = (text) => {
+  $('<p>').html(text)
+    .addClass('gameLogText')
+    .appendTo('#logTextContainer');
+};
+
 // ============ Render Computer field ============ //
-const rend = (player) => {
+const renderOtherPlayerField = (player) => {
   const { playerId: id, playerName } = game.playerHands[player];
   const $parent = $('.otherPlayerFields');
 
@@ -1361,7 +1346,7 @@ const renderOtherPlayerHand = (player) => {
   $(`#${id}Hand`).children().remove();
 
   for (const card of hand) {
-    renderOtherCard(`#${id}Hand`, card, true, 0, 60);
+    renderOtherCard(`#${id}Hand`, card, true, 0, 50);
   }
 };
 const renderOtherPlayerMoney = (player) => {
@@ -1394,7 +1379,7 @@ const renderOtherPlayerMoneyTotal = (player) => {
 const renderOtherPlayerFullSets = (player) => {
   const { playerId: id } = game.playerHands[player];
 
-  $(`#${id}FullSets`).text(`${getFullProperties(player).length}`);
+  $(`#${id}FullSets`).text(`${getProperties(player, 'full').length}`);
 };
 
 const renderOtherPlayerProperty = (player) => {
@@ -1445,19 +1430,15 @@ const getFlattenProperties = (player) => {
 
 const calculatePropertyRentValue = (player, color) => {
   const { properties } = game.playerHands[player];
-  const colorKey = color.split(' ').join();
-  // const fullsetLength = properties[colorKey].rentAmounts.length;
-  const propertyCount = properties[colorKey].length;
+  const propertyCount = properties[removeEmptySpace(color)].length;
   const lastCard = propertyCount - 1;
   let total = 0;
 
   // if (propertyCount <= fullsetLength) {
-  total = properties[colorKey][lastCard].rentAmounts[propertyCount - 1];
+  total = properties[color][lastCard].rentAmounts[lastCard];
   // } else {
   //   total = properties[color].rentAmount[fullsetLength - 1] + ;
   // }
-
-  // TODO return to this if any change require after add house or hotel
 
   return total;
 };
@@ -1511,6 +1492,9 @@ const main = () => {
       renderOtherPlayerHand(i);
     }
   }
+  drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2);
+
+  // * Page button listerners
   $('#endTurn').on('click', () => endTurn());
 };
 

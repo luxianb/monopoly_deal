@@ -45,14 +45,14 @@ button {
 }
 
 .cardPile {
-  height: 200px;
-  width: 125px;
+  height: 160px;
+  width: 100px;
   border-radius: 6px;
   background-color: rgba(0, 0, 0, 0.1);
   /* align-items: center; */
 }
 
-.pileContainer:last-child {
+#discardPileContainer {
   margin-left: 50px;
 }
 
@@ -87,8 +87,8 @@ button {
 }
 
 .otherPCard {
-  height: 80px;
-  width: 50px;
+  height: 60px;
+  width: 37.5px;
   font-size: 0.75rem;
   cursor: default;
 }
@@ -98,8 +98,8 @@ button {
   background-size: cover;
 }
 .piled-card {
-  height: 200px;
-  width: 125px;
+  height: 160px;
+  width: 100px;
   position: absolute;
   box-shadow: 0 0 4px rgba(0, 0, 0, .15);
   cursor: default;
@@ -116,7 +116,10 @@ button {
   flex-wrap: wrap;
 }
 
+#userProperty {
+  flex-wrap: wrap;
 
+}
 
 .field {
   flex: 1;
@@ -141,9 +144,10 @@ button {
   border-bottom: 0;
 }
 
+
 .moneyPile .row, .hand .row, .propertyPile .row {
   border-bottom: 3px solid white;
-  height: 45px;
+  height: 25px;
   position: relative;
   background-color: rgba(255, 255, 255, 0.8);
   justify-content: flex-end;
@@ -322,6 +326,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 3px;
 }
 
 .rentPayDisplay {
@@ -389,6 +394,10 @@ button {
   flex-direction: column;
 }
 
+.propertyValueDisplay {
+  margin-top: 3px;
+}
+
 .optionSelected {
   /* background-color: rgba(0, 0, 0, 0.05); */
   background-color: #e1f5fe;
@@ -402,3 +411,31 @@ button {
   justify-content: center ;
 }
 
+#gameLogContainer {
+  position: absolute;
+  right: 16px;
+  border: 3px solid white;
+  border-radius: 12px;
+  height: 300px;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 250px;
+  flex-direction: column;
+}
+#gameLogLabel {
+  background-color: white;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+}
+
+#logTextContainer {
+  overflow-y: auto;
+  padding: 6px;
+  flex-direction: column;
+}
+
+.gameLogText{
+  margin: 0;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
