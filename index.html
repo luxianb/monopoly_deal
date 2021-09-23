@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://kit.fontawesome.com/bc14780aee.js" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
   <script src="app.js" charset="UTF-8"></script>
   <link rel="stylesheet" href="style.css">
@@ -35,26 +36,41 @@
       </div>
     </div>
 
+    <!-- Player Field -->
     <div class="playerField">
       <div class="moneyPile">
         <div class="row">
-          <p id="userMoneyTotal">Total: 0</p>
+          <div class="fieldIndicator">
+            <p>Total: <span id="userMoneyTotal">0</span>M</p>
+          </div>
+          <div class="fieldLabel">
+            <h3>Money</h3>
+          </div>
           <!-- <button id="endTurn">Pass Turn</button> -->
         </div>
         <div id="userMoney"></div>
       </div>
-
+      
       <div class="hand">
         <div class="row">
           <button id="endTurn">Pass Turn</button>
+          <div class="fieldLabel">
+            <h3>Hand</h3>
+          </div>
         </div>
         <div id="userHand"></div>
       </div>
-
+      
       <div class="propertyPile">
-        <!-- <div class="row">
-          <button id="endTurn">Pass Turn</button>
-        </div> -->
+        <div class="row">
+          <div class="fieldIndicator">
+            <p><span id="userFullSets">0</span> Full Sets</p>
+            </div>
+          <div class="fieldLabel">
+            <h3>Properties</h3>
+          </div>
+          <!-- <button id="endTurn">Pass Turn</button> -->
+        </div>
         <div id="userProperty"></div>
       </div>
     </div>

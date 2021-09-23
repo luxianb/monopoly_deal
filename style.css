@@ -12,6 +12,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0.5rem;
+  padding-bottom: 0;
   box-sizing: border-box;
   font-family: sans-serif;
 }
@@ -27,10 +28,14 @@ div {
 }
 
 main {
-  border: 1px solid black;
+  /* border: 1px solid black; */
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+button {
+  cursor: pointer;
 }
 
 .pileContainer {
@@ -64,8 +69,12 @@ main {
 }
 
 .card {
-  height: 160px;
-  width: 100px;
+  /* height: 160px;
+  width: 100px; */
+  height: 140px;
+  width: 87.5px;
+  /* height: 120px;
+  width: 75px; */
   background-color: white;
   box-shadow: 0 0 4px rgba(0, 0, 0, .15);
   display: flex;
@@ -98,8 +107,16 @@ main {
 
 #userHand, #userProperty, #userMoney {
   position: relative;
-  flex: 1
+  flex: 1;
+  background-color: rgba(255, 255,255,0.4);
+  padding: 6px;
 }
+
+#userHand {
+  flex-wrap: wrap;
+}
+
+
 
 .field {
   flex: 1;
@@ -108,7 +125,7 @@ main {
 }
 
 .playerField {
-  height: 300px;
+  height: 345px;
   display: flex;
   flex-direction: row;
 }
@@ -117,34 +134,145 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  
   position: relative;
+  border: 3px solid white;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 0;
+}
+
+.moneyPile .row, .hand .row, .propertyPile .row {
+  border-bottom: 3px solid white;
+  height: 45px;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.8);
+  justify-content: flex-end;
+  padding: 6px;
+} 
+
+.hand .row button {
+  background-color: #40c4ff;
+  border-radius:12px;
+  border: 0;
+  color: white;
+  font-size: 1.1rem;
+  min-width: 100px
+}
+
+.hand .row button:hover {
+  filter: brightness(1.1);
+}
+
+.fieldLabel {
+  position: absolute;
+  align-self: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+  width: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fieldIndicator {
+  padding: 3px 12px;
+  background-color: white;
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  color: #40c4ff;
+}
+
+.fieldLabel h3 {
+  color: #40c4ff;
+  text-transform: uppercase;
+}
+
+.moneyPile, .hand{
+  margin-right: 6px;
 }
 
 .playerField .hand {
   flex: 1.5;
 }
 
-.otherPlayerFields {
-  height: 200px;
-}
-
+/* Other Players CSS */
 .otherField {
-  min-width: 33.333vw ;
+  flex: 1;
+  /* min-width: 33.333vw ; */
+  flex-direction: column;
+  margin-right: 12px;
   /* flex: 1 */
 }
+    .otherField:last-child {
+      margin-right: 0;
+    }
+
+
+.otherPlayerName {
+  border-radius: 12px 12px 0 0;
+  border: 3px solid white;
+  padding: 6px;
+  justify-content: center;
+  background-color: white;
+}
+    .otherPlayerName h4 {
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .otherPlayerName i{ 
+      margin-left: 6px;
+    }
+
+
+.otherPlayerFields {
+  height: 250px;
+}
+
+.otherIndicator {
+  background-color: white;
+  height: 30px;
+  justify-content: center;
+  align-items: center;
+}
+.otherIndicator p {
+  margin: 0;
+}
+
 .otherMoneyPile, .otherHand, .otherPropertyPile {
-  flex: 1;
+  background-color:rgba(255, 255, 255, 0.4);
+  border: 3px solid white;
   flex-direction: column;
   flex-wrap: wrap;
 }
 
 .otherCardPile {
+  padding: 6px;
+}
+
+.otherMoneyPile, .otherPropertyPile {
+  border-top: 0;
+  flex: 1;
+  min-height: 160px;
+}
+.otherMoneyPile {
+  border-right: 1.5px solid white;
+  border-bottom-left-radius: 12px;
+}
+
+.otherPropertyPile {
+  /* border-left: 1.5px solid white;  */
+  border-bottom-right-radius: 12px;
+}
+
+.otherCardPile {
+  position: relative;
   flex: 1;
   flex-wrap: wrap;
 }
 
 .modalCard {
-  padding: 0 32px;
+  padding: 16px 32px;
   background-color: white;
   box-shadow: 0 0 6px rgba(0, 0, 0, .15);
   border-radius: 6px;
@@ -182,20 +310,23 @@ main {
   to {transform: scale(1.8);}
 }
 
-.wildPropChoiceContainer {
+.modalChoiceContainer {
   justify-content: space-around;
   width: 100%;
 }
 
 .wildPropDisplay{
-  height: 150px;
+  height: 160px;
   width: 100px;
   border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .rentPayDisplay {
-  height: 75px;
-  width: 50px;
+  height: 100px;
+  width: 62.5px;
   border-radius: 3px;
 }
 
@@ -203,7 +334,9 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 18px;
+  /* margin-right: 18px; */
+  padding: 6px;
+  margin: 3px;
   cursor: pointer;
 }
 
@@ -212,43 +345,60 @@ main {
   margin-bottom: 0;
 }
 
+.row {
+  flex-direction: row;
+}
+
+.modalBase .row {
+  flex: 1;
+  margin-top: 8px;
+}
 
 .modalBase button {
   background-color: #bbdefb;
-  height: 30px;
+  height: 35px;
   color: #1976d2;
   border: 0;
-  border-radius: 3px;
+  border-radius: 6px;
   flex: 1;
   cursor: pointer;
-  margin-bottom: 16px;
 }
 
 .modalBase h3 {
   text-transform: uppercase;
 }
 
-.modalBase button:last-child {
+.modalBase button:nth-child(2) {
   margin-left: 8px;
-}
-
-.modalBase p {
-  margin: 0;
-  margin-bottom: 6px;
 }
 
 
 .rentBalance {
   font-size: 3rem;
   margin: 0;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
+
+.modalBase p, .modalBase h3 {
+  margin: 0;
+  margin-bottom: 6px;
+}
+
 
 .payRentSection {
   flex-direction: column;
 }
 
 .optionSelected {
-  background-color: purple;
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  background-color: #e1f5fe;
+  border-radius: 6px;
+}
+
+.rentSelectionContainer {
+  max-width: 340px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  justify-content: center ;
 }
 
