@@ -510,6 +510,7 @@ const setWildPropCurrentColor = (color, card) => {
   const rentAmount = cardTypes.property[color.split(' ').join('')].rentAmounts;
   const target = card.colors.indexOf(color);
   card.colors.unshift(...card.colors.splice(target, 1));
+  card.image.unshift(...card.image.splice(target, 1));
   card.rentAmounts.push(...rentAmount);
 };
 
@@ -809,6 +810,58 @@ const colorToHex = (color) => {
   }
 };
 
+/** @type {(cardNames: string[]) => string[]} */
+const getCardImage = (cardName) => {
+  switch (cardName) {
+    // Properties
+    case 'Black Property': return ['./assets/property_black.png'];
+    case 'Blue Property': return ['./assets/property_blue.png'];
+    case 'Brown Property': return ['./assets/property_brown.png'];
+    case 'Green Property': return ['./assets/property_green.png'];
+    case 'Light Blue Property': return ['./assets/property_lightBlue.png'];
+    case 'Light Green Property': return ['./assets/property_lightGreen.png'];
+    case 'Orange Property': return ['./assets/property_orange.png'];
+    case 'Purple Property': return ['./assets/property_purple.png'];
+    case 'Red Property': return ['./assets/property_red.png'];
+    case 'Yellow Property': return ['./assets/property_yellow.png'];
+    // Wild Property Cards
+    // case 'Any Property': return [''];
+    case 'Brown-Light Blue Property': return ['./assets/wildCard_brownLightBlue.png', './assets/wildCard_lightBlueBrown.png'];
+    case 'Black-Light Blue Property': return ['./assets/wildCard_blackLightBlue.png', './assets/wildCard_lightBlueBlack.png'];
+    case 'Orange-Purple Property': return ['./assets/wildCard_orangePurple.png', './assets/wildCard_purpleOrange.png'];
+    case 'Red-Yellow Property': return ['./assets/wildCard_redYellow.png', './assets/wildCard_yellowRed.png'];
+    case 'Blue-Green Property': return ['./assets/wildCard_blueGreen.png', './assets/wildCard_greenBlue.png'];
+    case 'Green-Black Property': return ['./assets/wildCard_greenBlack.png', './assets/wildCard_blackGreen.png'];
+    case 'Black-Light Green Property': return ['./assets/wildCard_blackLightGreen.png', './assets/wildCard_lightGreenBlack.png'];
+    // Money
+    case '1M': return ['./assets/money_1m.png'];
+    case '2M': return ['./assets/money_2m.png'];
+    case '3M': return ['./assets/money_3m.png'];
+    case '4M': return ['./assets/money_4m.png'];
+    case '5M': return ['./assets/money_5m.png'];
+    case '10M': return ['./assets/money_10m.png'];
+    // Action Cards
+    case 'Just say no': return ['./assets/action_sayNo.png'];
+    case 'Deal breaker': return ['./assets/action_dealBreaker.png'];
+    case 'It\'s Your Birthday': return ['./assets/action_birthday.png'];
+    case 'Sly deal': return ['./assets/action_slyDeal.png'];
+    case 'Forced deal': return ['./assets/action_forcedDeal.png'];
+    case 'Debt collector': return ['./assets/action_debtCollect.png'];
+    case 'Double the Rent': return ['./assets/action_doubleRent.png'];
+    case 'Hotel': return ['./assets/action_hotel.png'];
+    case 'House': return ['./assets/action_house.png'];
+    case 'Pass Go': return ['./assets/action_passGo.png'];
+    // Rent Cards
+    // case 'Any Rent': return ['];
+    case 'Blue-Green Rent': return ['./assets/rent_blueGreen.png'];
+    case 'Orange-Purple Rent': return ['./assets/rent_purpleOrange.png'];
+    case 'Black-Light Green Rent': return ['./assets/rent_blackLightGreen.png'];
+    case 'Brown-Light Blue Rent': return ['./assets/rent_brownLightBlue.png'];
+    case 'Red-Yellow Rent': return ['./assets/rent_redYellow.png'];
+    default: return ['./assets/cardBack.png'];
+  }
+};
+
 class Card {
   constructor(name, value, action, totalCards) {
     this.name = name;
@@ -816,6 +869,7 @@ class Card {
     this.totalCards = totalCards;
     this.action = action;
     this.rentAmounts = [];
+    this.image = getCardImage(this.name);
   }
 }
 
@@ -826,6 +880,7 @@ class MoneyCard extends Card {
     this.value = value;
     this.totalCards = totalCards;
     this.action = (cardID) => addMoney(cardID);
+    this.image = getCardImage(this.name);
   }
 }
 
@@ -836,6 +891,7 @@ class RentCard extends Card {
     this.value = value;
     this.totalCards = totalCards;
     this.colors = color;
+    this.image = getCardImage(this.name);
     this.action = (cardID) => {
       if (this.name === 'Any') {
         openRentAnyModal(cardID, this.colors);
@@ -855,6 +911,7 @@ class PropertyCard extends Card {
     this.colors = color;
     this.rentAmounts = rentAmounts || [];
     this.locationNames = locationNames || [];
+    this.image = getCardImage(this.name);
     this.action = (cardID) => {
       if (this.colors.length > 1) {
         openWildCardModal(cardID, this.colors);
@@ -911,10 +968,10 @@ const cardTypes = {
     brownLightBlue: new PropertyCard('Brown-Light Blue', 1, 1, [colors.brown, colors.lightBlue]),
     blackLightBlue: new PropertyCard('Black-Light Blue', 4, 1, [colors.black, colors.lightBlue]),
     orangePurple: new PropertyCard('Orange-Purple', 2, 2, [colors.orange, colors.purple]),
-    redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.yellow, colors.red]),
-    blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.green, colors.blue]),
+    redYellow: new PropertyCard('Red-Yellow', 3, 2, [colors.red, colors.yellow]),
+    blueGreen: new PropertyCard('Blue-Green', 4, 1, [colors.blue, colors.green]),
     greenBlack: new PropertyCard('Green-Black', 4, 1, [colors.green, colors.black]),
-    blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.lightGreen, colors.black]),
+    blackLightGreen: new PropertyCard('Black-Light Green', 2, 1, [colors.black, colors.lightGreen]),
   },
 };
 
@@ -1072,7 +1129,9 @@ const renderCard = (parent, cardInfo, stackPosition) => {
     .attr('id', cardInfo.id)
     .appendTo(parent)
     .on('click', () => cardInfo.action(cardInfo.id))
-    .text(`${cardInfo.name} \n ${cardInfo.type}`)
+    // .text(`${cardInfo.name} \n ${cardInfo.type}`)
+    .css('background-image', `url(${cardInfo.image[0]})`)
+    .css('background-size', 'contain')
     .hover((e) => {
       e.stopPropagation();
       $(e.currentTarget).toggleClass('cardToFront');
@@ -1088,15 +1147,17 @@ const renderOtherCard = (parent, cardInfo, hideInfo, stackPosition) => {
   const $cardContainer = $('<div>')
     .addClass('otherPCard card')
     .attr('id', cardInfo.id)
-    .text(`
-      ${cardInfo.name} \n ${cardInfo.type}
-    `)
+    // .text(` ${cardInfo.name} \n ${cardInfo.type} `)
     .hover((e) => {
       e.stopPropagation();
       $(e.currentTarget).toggleClass('cardToFront');
     })
     .on('click', () => cardInfo.action(cardInfo.id));
-
+  if (!hideInfo) {
+    $cardContainer
+      .css('background-image', `url(${cardInfo.image[0]})`)
+      .css('background-size', 'contain');
+  }
   if (hideInfo) {
     $cardContainer
       .addClass('card-back')
