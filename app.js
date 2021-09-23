@@ -226,7 +226,7 @@ const openRentModal = (cardID, colors) => {
   }
 };
 
-const openPayRentModal = (cardID, rentAmount) => {
+const openPayRentModal = (cardID, rentAmount, title) => {
   // console.log(cardID, rentAmount);
   const total = rentAmount;
   const { money, properties } = game.playerHands[game.userTurn];
@@ -238,7 +238,7 @@ const openPayRentModal = (cardID, rentAmount) => {
 
   money.sort((a, b) => a.value - b.value);
 
-  createModalBase('Pay Rent');
+  createModalBase(title || 'Pay Rent');
   const $modal = $('.modalCard'); function closeModal() { $('.modalBase').remove(); }
 
   const $RemainingBalance = $('<p>').text(`${balance}M`).addClass('rentBalance').appendTo($modal);
@@ -711,7 +711,22 @@ const rent = (cardID, rentAmount) => {
 };
 const sayNo = (color, player) => {};
 const dealBreak = (color, player) => {};
-const birthdayParty = (color, player) => {};
+
+const birthdayParty = (cardID, player) => {
+  for (let i = 0; i < game.numberOfPlayers; i++) {
+    if (i !== game.currentTurn && i !== game.userTurn) {
+      computerPayRent(2, i);
+    }
+  }
+  if (game.currentTurn !== game.userTurn) {
+    openPayRentModal(cardID, 2, 'Sponsor Birthday!');
+  }
+  discardCard(cardID);
+  if (game.currentTurn === game.userTurn) {
+    addTurn();
+  }
+};
+
 const makeSlyDeal = (color, player) => {};
 const makeforcedDeal = (color, player) => {};
 const collectDebt = (color, player) => {};
@@ -973,11 +988,11 @@ const cardTypes = {
   actionCard: {
   //   justSayNo: new Card('Just say no', 4, () => sayNo(), 3),
   //   dealBreaker: new Card('Deal breaker', 5, () => dealBreak(), 2),
-  //   itsYourBirthday: new Card('It\'s Your Birthday', 2, () => birthdayParty(), 3),
-  //   slyDeal: new Card('Sly deal', 3, () => makeSlyDeal(), 3),
-  //   forcedDeal: new Card('Forced deal', 3, () => makeforcedDeal(), 3),
-  //   debtCollector: new Card('Debt collector', 3, () => collectDebt(), 3),
-  //   doubleTheRent: new Card('Double the Rent', 1, () => doubleRent(), 2),
+    itsYourBirthday: new Card('It\'s Your Birthday', 2, () => birthdayParty(), 3),
+    //   slyDeal: new Card('Sly deal', 3, () => makeSlyDeal(), 3),
+    //   forcedDeal: new Card('Forced deal', 3, () => makeforcedDeal(), 3),
+    //   debtCollector: new Card('Debt collector', 3, () => collectDebt(), 3),
+    //   doubleTheRent: new Card('Double the Rent', 1, () => doubleRent(), 2),
     hotel: new Card('Hotel', 4, (cardID) => openHotelModal(cardID), 3),
     house: new Card('House', 2, (cardID) => openHouseModal(cardID), 2),
     passGo: new Card('Pass Go', 1, (cardID) => passGo(cardID), 10),
