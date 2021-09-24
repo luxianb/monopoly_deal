@@ -1,11 +1,9 @@
-/* eslint-disable consistent-return */
 /* eslint-env jquery */
 
 const DEBUG = false;
 
 // ============ Main Game settings ============ //
 const game = {
-  // numberOfPlayers: 1,
   numberOfPlayers: 4,
   userTurn: 0, // Index no. of User
   currentTurn: 0,
@@ -19,7 +17,7 @@ const game = {
 
 };
 
-// ============ Classes ============ //
+// ============ Player Structures ============ //
 const characterNames = ['Sir Battleship', 'Mdm Cat', 'Mr Tophat', 'Ms Racecar', 'Mr Moneybag'];
 class PlayerHand {
   constructor(playerName) {
@@ -221,6 +219,10 @@ const openPayRentModal = (cardID, rentAmount, title) => {
   console.log(balance);
   const falttenProperties = getFlattenProperties(game.userTurn);
 
+  if (money.length === 0 && falttenProperties.length === 0) {
+    return null; // End Function if user has nothing
+  }
+
   // console.log(selected);
 
   money.sort((a, b) => a.value - b.value);
@@ -330,7 +332,7 @@ const openPayRentModal = (cardID, rentAmount, title) => {
   }
 
   function onSubmitPress(event) {
-    if (balance <= 0 || selected.property.cards.length === falttenProperties.length) {
+    if (balance <= 0 || (selected.property.cards.length === falttenProperties.length && selected.money.cards.length === money.length)) {
       if (selected.money.cards.length > 0) {
         for (let i = 0; i < selected.money.cards.length; i++) {
           const card = selected.money.cards[i];
@@ -1094,7 +1096,6 @@ const setUpGame = () => {
 function addTurn() {
   const player = game.playerHands[game.currentTurn];
 
-  checkWin();
   // Update player turn once actions cards are up
   if (player.turn === 3) {
     player.turn = 1;
@@ -1236,8 +1237,11 @@ const renderPileCard = (parent, deck, position) => {
     .addClass('card').addClass('card-back').addClass('piled-card')
     .appendTo(parent)
     .css('left', position * 0.5);
-    // .text(deck.length)
-    // .on('click', () => drawCards(deck, game.playerHands[game.currentTurn].hand, 1));
+  if (DEBUG) {
+    $cardContainer
+      .text(deck.length)
+      .on('click', () => drawCards(deck, game.playerHands[game.currentTurn].hand, 1));
+  }
 };
 
 const renderPlayerHand = () => {
@@ -1417,17 +1421,19 @@ function render() {
 }
 
 const main = () => {
-  setUpGame();
-  renderCardPile();
-  renderPlayerHand();
+  setUpGame(); // Set up the card deck, player hands, and other player fields
+  renderCardPile(); // Render the draw pile on the display
+  renderPlayerHand(); // Render the player's cards
+
   for (let i = 0; i < game.numberOfPlayers; i++) {
     if (i !== game.userTurn) {
-      renderOtherPlayerHand(i);
+      renderOtherPlayerHand(i); // Render each of the other player's hands
     }
   }
-  drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2);
 
-  // * Page button listerners
+  drawCards(game.drawPile, game.playerHands[game.currentTurn].hand, 2); // Draw cards for first player
+
+  // * Page button listerners * //
   $('#endTurn').on('click', () => endTurn());
 };
 
