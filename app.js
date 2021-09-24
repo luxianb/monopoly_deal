@@ -296,10 +296,8 @@ const openPayRentModal = (cardID, rentAmount, title) => {
     const selectedCards = deck.filter((each) => each.selected);
     console.log(selectedCards);
     let totalValue = 0;
-    if (selectedCards.length > 1) {
-      totalValue = selectedCards.reduce((prev, current) => prev.value + current.value);
-    } if (selectedCards.length === 1) {
-      totalValue = selectedCards[0].value;
+    for (let i = 0; i < selectedCards.length; i++) {
+      totalValue += selectedCards[i].value;
     }
 
     console.log('moneyValue', totalValue);
@@ -317,10 +315,8 @@ const openPayRentModal = (cardID, rentAmount, title) => {
 
     const selectedCards = deck.filter((each) => each.selected);
     let totalValue = 0;
-    if (selectedCards.length > 1) {
-      totalValue = selectedCards.reduce((prev, current) => prev.value + current.value);
-    } if (selectedCards.length === 1) {
-      totalValue = selectedCards[0].value;
+    for (let i = 0; i < selectedCards.length; i++) {
+      totalValue += selectedCards[i].value;
     }
 
     console.log('propertyValue', totalValue);
@@ -935,7 +931,7 @@ const cardTypes = {
   //   any: new RentCard('Any', 3, 3, colors.allColors()),
     blueGreen: new RentCard('Blue-Green', 1, 2, [colors.blue, colors.green]),
     orangePurple: new RentCard('Orange-Purple', 1, 2, [colors.orange, colors.purple]),
-    blackLightGreen: new RentCard('Black-Light Green', 1, 20, [colors.black, colors.lightGreen]),
+    blackLightGreen: new RentCard('Black-Light Green', 1, 2, [colors.black, colors.lightGreen]),
     brownLightBlue: new RentCard('Brown-Light Blue', 1, 2, [colors.brown, colors.lightBlue]),
     redYellow: new RentCard('Red-Yellow', 1, 2, [colors.red, colors.yellow]),
   },
@@ -948,7 +944,7 @@ const cardTypes = {
     Purple: new PropertyCard('Purple', 2, 3, [colors.purple], [1, 2, 4], ['Pall Mall', 'Whitehall', "Northumrl'd Avenue"]),
     Black: new PropertyCard('Black', 2, 4, [colors.black], [1, 2, 3, 4], ['Marylebone Station', 'Fenchurch St. Station', 'Liverpool St. Station', "King's Cross Station"]),
     Brown: new PropertyCard('Brown', 1, 2, [colors.brown], [1, 2], ['Old Kent Road', 'Whitechapel Road']),
-    LightGreen: new PropertyCard('Light Green', 2, 20, [colors.lightGreen], [1, 2], ['Electric Company', 'Water Works']),
+    LightGreen: new PropertyCard('Light Green', 2, 2, [colors.lightGreen], [1, 2], ['Electric Company', 'Water Works']),
     LightBlue: new PropertyCard('Light Blue', 1, 3, [colors.lightBlue], [1, 2, 3], ['Euston Road', 'The Angel Islington', 'Pentonville Road']),
     // any: new PropertyCard('Any', 0, 2, [...colors.allColors()]),
     brownLightBlue: new PropertyCard('Brown-Light Blue', 1, 1, [colors.brown, colors.lightBlue]),
@@ -1239,7 +1235,7 @@ const renderPileCard = (parent, deck, position) => {
   const $cardContainer = $('<div>')
     .addClass('card').addClass('card-back').addClass('piled-card')
     .appendTo(parent)
-    .css('left', position * 0.25);
+    .css('left', position * 0.5);
     // .text(deck.length)
     // .on('click', () => drawCards(deck, game.playerHands[game.currentTurn].hand, 1));
 };
@@ -1263,7 +1259,6 @@ const renderMoney = () => {
   //   }
   // }
   const moneyStacks = {};
-  // console.log(money);
   money.forEach((card) => {
     if (typeof moneyStacks[`${card.value}M`] === 'undefined') {
       moneyStacks[`${card.value}M`] = [];
@@ -1342,6 +1337,7 @@ const renderOtherPlayerHand = (player) => {
     renderOtherCard(`#${id}Hand`, card, true, 0, 50);
   }
 };
+
 const renderOtherPlayerMoney = (player) => {
   const { playerId: id, money } = game.playerHands[player];
   money.sort((a, b) => a.value - b.value);
@@ -1366,12 +1362,11 @@ const renderOtherPlayerMoney = (player) => {
 
 const renderOtherPlayerMoneyTotal = (player) => {
   const { playerId: id } = game.playerHands[player];
-
   $(`#${id}MoneyTotal`).text(`${calculateTotalMoney(player)}`);
 };
+
 const renderOtherPlayerFullSets = (player) => {
   const { playerId: id } = game.playerHands[player];
-
   $(`#${id}FullSets`).text(`${getProperties(player, 'full').length}`);
 };
 
