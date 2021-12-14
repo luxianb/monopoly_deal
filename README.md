@@ -1,6 +1,8 @@
 # Monopoly Deal Browser Game
 Browser adaptation of card game adaptation of the hectic game of Monopoly. Build up 3 full sets of properties to win, what could go wrong? Triump as other players take actions and cut deals against you as they try to rise to the top.
 
+Online preview: https://monopoly-deal-game-nswtaumiy-luxianb.vercel.app/
+
 ## How to play
 Beat other players to be the first to build up 3 full sets of properties! Set up properties from your hand, or steal properties from your opponents with the help of your action cards. Defend your stack of properties by storing up your cash to pay off your opponents as they come after you.
 
